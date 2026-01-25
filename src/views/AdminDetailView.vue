@@ -1,10 +1,30 @@
 <template>
-  <div>
-    <h2>관리자 로그인</h2>
-    <div class="login-form">
-      <input v-model="id" type="text" placeholder="ID" />
-      <input v-model="password" type="password" placeholder="Password" />
-      <button @click="login" class="login-btn">Sign in</button>
+  <div class="admin-detail-container">
+    <!-- 헤더 -->
+    <div class="header">
+      <button @click="goBack" class="back-btn">←</button>
+      <button @click="goHome" class="close-btn">✕</button>
+    </div>
+
+    <!-- 카드 리스트 -->
+    <div class="card-list">
+      <div class="card" v-for="(item, index) in cardList" :key="index">
+        <div class="card-image"></div>
+        <div class="card-content">
+          <div class="card-row">
+            <span class="label">대상 :</span>
+            <span class="value">{{ item.target }}</span>
+          </div>
+          <div class="card-row">
+            <span class="label">시각 :</span>
+            <span class="value">{{ item.time }}</span>
+          </div>
+          <div class="card-row">
+            <span class="label">위치 :</span>
+            <span class="value">{{ item.location }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -14,25 +34,35 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 export default {
-  name: 'AdminLogin',
+  name: 'AdminDetailView',
   setup() {
     const router = useRouter()
-    const id = ref('')
-    const password = ref('')
-
-    const login = () => {
-      // 간단한 로그인 처리
-      if (id.value && password.value) {
-        router.push('/admin/screen')
-      } else {
-        alert('ID와 비밀번호를 입력하세요.')
+    
+    const cardList = ref([
+      {
+        target: '',
+        time: '',
+        location: ''
+      },
+      {
+        target: '',
+        time: '',
+        location: ''
       }
+    ])
+
+    const goBack = () => {
+      router.go(-1)
+    }
+
+    const goHome = () => {
+      router.push('/')
     }
 
     return {
-      id,
-      password,
-      login
+      cardList,
+      goBack,
+      goHome
     }
   }
 }
