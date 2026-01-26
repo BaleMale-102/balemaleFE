@@ -1,10 +1,12 @@
 <script setup lang="ts">
 // import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { computed } from 'vue'
 // import { usePublicStore } from './stores/publicStore'
 // import { useAdminStore } from './stores/adminStore'
 
 const router = useRouter()
+const route = useRoute()
 // const publicStore = usePublicStore()
 // const adminStore = useAdminStore()
 
@@ -15,10 +17,14 @@ const router = useRouter()
 const goToAdmin = () => {
   router.push('/admin/login')
 }
+
+const isAdminRoute = computed(() => {
+  return route.path.startsWith('/admin')
+})
 </script>
 
 <template>
-  <button @click="goToAdmin" class="admin-btn"></button>
+  <button v-if="!isAdminRoute" @click="goToAdmin" class="admin-btn"></button>
   <router-view />
 </template>
 
