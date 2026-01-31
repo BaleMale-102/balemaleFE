@@ -1,44 +1,82 @@
 <template>
   <div class="admin-detail-container">
-    <!-- 헤더 -->
+    <!-- 헤더 (드롭다운 오른쪽 배치) -->
     <div class="header">
       <button @click="goBack" class="back-btn">←</button>
-      <button @click="goHome" class="close-btn">✕</button>
+      <div class="header-right">
+        <div class="filter-wrap">
+          <select v-model="filterOption" class="filter-select" aria-label="정렬/필터">
+            <option value="latest">최신순</option>
+            <option value="oldest">오래된순</option>
+            <option value="human">사람</option>
+            <option value="obstacle">장애물</option>
+          </select>
+        </div>
+        <button @click="goHome" class="close-btn">✕</button>
+      </div>
     </div>
 
-    <!-- 카드 리스트 -->
-    <div class="card-list">
-      <div class="card" v-for="(item, index) in cardList" :key="index">
-        <div class="card-image"></div>
+    <!-- 로딩 -->
+    <div v-if="loading" class="loading">이상탐지 로그를 불러오는 중...</div>
+
+    <!-- 카드 리스트 (프론트 필터/정렬) -->
+    <div class="card-list" v-else>
+      <div class="card" v-for="item in filteredCardList" :key="item.id">
         <div class="card-content">
           <div class="card-row">
-            <span class="label">대상 :</span>
-            <span class="value">{{ item.target }}</span>
+            <span class="label">유형 :</span>
+            <span class="value">{{ typeLabel(item.type) }}</span>
           </div>
           <div class="card-row">
             <span class="label">시각 :</span>
-            <span class="value">{{ item.time }}</span>
+            <span class="value">{{ formatTime(item.occurredAt) }}</span>
           </div>
           <div class="card-row">
             <span class="label">위치 :</span>
-            <span class="value">{{ item.location }}</span>
+            <span class="value">{{ locationText(item.fromNode, item.toNode) }}</span>
           </div>
         </div>
       </div>
+      <div v-if="filteredCardList.length === 0" class="empty">이상탐지 로그가 없습니다.</div>
     </div>
   </div>
 </template>
 
 <script>
+import { getAnomalyEvents } from '@/api/modules/admin'
+
+const TYPE_LABEL = {
+  HUMAN: '사람',
+  OBSTACLE: '장애물'
+}
+
 export default {
   name: 'AdminDetailView',
   data() {
     return {
-      cardList: [
-        { target: '', time: '', location: '' },
-        { target: '', time: '', location: '' }
-      ]
+      filterOption: 'latest',
+      rawEventList: [],
+      loading: false
     }
+  },
+  computed: {
+    filteredCardList() {
+      let list = [...this.rawEventList]
+      if (this.filterOption === 'human') {
+        list = list.filter((item) => item.type === 'HUMAN')
+      } else if (this.filterOption === 'obstacle') {
+        list = list.filter((item) => item.type === 'OBSTACLE')
+      }
+      const desc = this.filterOption === 'latest' || this.filterOption === 'human' || this.filterOption === 'obstacle'
+      return list.sort((a, b) => {
+        const ta = new Date(a.occurredAt).getTime()
+        const tb = new Date(b.occurredAt).getTime()
+        return desc ? tb - ta : ta - tb
+      })
+    }
+  },
+  mounted() {
+    this.fetchEvents()
   },
   methods: {
     goBack() {
@@ -46,6 +84,36 @@ export default {
     },
     goHome() {
       this.$router.push('/')
+    },
+    typeLabel(type) {
+      return TYPE_LABEL[type] ?? type
+    },
+    formatTime(occurredAt) {
+      if (!occurredAt) return ''
+      const d = new Date(occurredAt)
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      const h = String(d.getHours()).padStart(2, '0')
+      const min = String(d.getMinutes()).padStart(2, '0')
+      return `${y}-${m}-${day} ${h}:${min}`
+    },
+    locationText(fromNode, toNode) {
+      if (!fromNode && !toNode) return '-'
+      return `${fromNode || '-'}와 ${toNode || '-'} 사이 이동 경로`
+    },
+    async fetchEvents() {
+      this.loading = true
+      try {
+        const res = await getAnomalyEvents({ size: 50 })
+        const raw = res.data
+        this.rawEventList = raw?.data?.content ?? raw?.content ?? []
+      } catch (e) {
+        console.error(e)
+        this.rawEventList = []
+      } finally {
+        this.loading = false
+      }
     }
   }
 }
@@ -69,8 +137,42 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   padding: 0 10px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-wrap {
+  flex-shrink: 0;
+}
+
+.filter-select {
+  min-width: 100px;
+  padding: 8px 10px;
+  font-size: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+}
+
+.filter-select option {
+  font-size: 12px;
+}
+
+.loading,
+.empty {
+  text-align: center;
+  color: #fff;
+  padding: 40px 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .back-btn {
@@ -123,8 +225,6 @@ export default {
   background: #ffffff;
   border: 1px solid #e0e0e0;
   padding: 24px;
-  display: flex;
-  gap: 20px;
   box-sizing: border-box;
   width: 100%;
   border-radius: 8px;
@@ -135,16 +235,6 @@ export default {
 .card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
-}
-
-.card-image {
-  width: 100px;
-  height: 100px;
-  border: 1px solid #ccc;
-  flex-shrink: 0;
-  background: #f5f5f5;
-  box-sizing: border-box;
-  border-radius: 4px;
 }
 
 .card-content {
@@ -206,13 +296,7 @@ export default {
 
   .card {
     padding: 16px;
-    gap: 16px;
     border-radius: 6px;
-  }
-
-  .card-image {
-    width: 80px;
-    height: 80px;
   }
 
   .card-content {
@@ -248,12 +332,6 @@ export default {
 
   .card {
     padding: 20px;
-    gap: 18px;
-  }
-
-  .card-image {
-    width: 90px;
-    height: 90px;
   }
 
   .card-row {
@@ -269,7 +347,6 @@ export default {
 @media (min-width: 769px) {
   .admin-detail-container {
     padding: 24px;
-    padding-top: 96px;
     padding-left: 24px;
     max-width: 1200px;
     margin: 0 auto;
@@ -285,12 +362,6 @@ export default {
 
   .card {
     padding: 28px;
-    gap: 24px;
-  }
-
-  .card-image {
-    width: 120px;
-    height: 120px;
   }
 
   .card-content {

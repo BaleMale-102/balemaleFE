@@ -10,20 +10,6 @@ export interface Car {
   plate: string
 }
 
-//관리자 응답 구조 
-// #TODO: 백엔드 구현 후 수정 필요
-export interface AdminResponse<T> {
-  data: T
-  message: string
-  status: number
-}
-
-export interface AnomalyData {
-  targetName: string
-  timestamp: string
-  description: string
-}
-
 // 출차할(주차완료된) 차량 상세 조회 응답 구조
 export interface ParkedCar {
   vehicleId: number
@@ -47,4 +33,37 @@ export interface AvailableParkingCount {
   normalCount: number
   disabledCount: number
   totalCount: number
+}
+
+// 관리자 로그인 요청 body
+export interface AdminLoginRequest {
+  username: string
+  password: string
+}
+
+// 관리자 로그인 응답 구조 (백엔드 구현 후 필드 추가/수정)
+export interface AdminLoginResponse {
+  token?: string
+  // 백엔드 응답에 맞춰 추가
+}
+
+// 이상탐지 이벤트 단건 (admin/anomaly-events)
+export interface AnomalyEvent {
+  id: number
+  type: string
+  message: string
+  status: string
+  occurredAt: string
+  fromNode: string
+  toNode: string
+  plate: string
+}
+
+// 이상탐지 이벤트 목록 페이지 응답
+export interface AnomalyEventsPageResponse {
+  content: AnomalyEvent[]
+  totalElements: number
+  page: number
+  size: number
+  totalPages: number
 }

@@ -22,7 +22,7 @@
             class="parking-spot"
             :class="{ occupied: spot.occupied }"
           >
-            <span v-if="idx >= 2" class="disabled-icon" aria-hidden="true">♿</span>
+            <span v-if="idx <= 1" class="disabled-icon" aria-hidden="true">♿</span>
           </div>
         </div>
       </div>

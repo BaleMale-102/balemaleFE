@@ -1,6 +1,8 @@
 <template>
   <div class="admin-login-container">
-    <button @click="goHome" class="back-btn">←</button>
+    <div class="header">
+      <button @click="goHome" class="back-btn">←</button>
+    </div>
     <div class="login-card">
       <h2>관리자 로그인</h2>
       <div class="login-form">
@@ -18,27 +20,43 @@
           autocomplete="current-password"
           placeholder="admin password" 
         />
-        <button @click="login" class="login-btn">Sign In</button>
+        <button @click="login" class="login-btn" :disabled="loading">
+          {{ loading ? '로그인 중...' : 'Sign In' }}
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { postAdminLogin } from '@/api/modules/admin'
+
 export default {
   name: 'AdminLogin',
   data() {
     return {
       id: '',
-      password: ''
+      password: '',
+      loading: false
     }
   },
   methods: {
-    login() {
-      if (this.id && this.password) {
-        this.$router.push('/admin/detail')
-      } else {
+    async login() {
+      if (!this.id || !this.password) {
         alert('ID와 비밀번호를 입력하세요.')
+        return
+      }
+      this.loading = true
+      try {
+        await postAdminLogin({ username: this.id, password: this.password })
+        this.$router.push('/admin/detail')
+      } catch (e) {
+        const msg = e.response?.data?.message ?? e.response?.status === 401
+          ? 'ID 또는 비밀번호가 올바르지 않습니다.'
+          : '로그인에 실패했습니다. 다시 시도해주세요.'
+        alert(msg)
+      } finally {
+        this.loading = false
       }
     },
     goHome() {
@@ -51,25 +69,30 @@ export default {
 <style scoped>
 .admin-login-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   min-height: 100vh;
   width: 100%;
   background-color: #1B4300;
   padding: 20px;
+  padding-top: 80px;
+  padding-left: 70px;
+  box-sizing: border-box;
   position: relative;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 190px;
+  padding: 0 10px;
+}
+
 .back-btn {
-  position: fixed;
-  top: 20px;
-  left: 20px;
   background: transparent;
   border: none;
   color: #ffffff;
   font-size: 24px;
   cursor: pointer;
-  z-index: 9999;
   width: 40px;
   height: 40px;
   display: flex;
@@ -88,6 +111,7 @@ export default {
   padding: 40px;
   width: 100%;
   max-width: 500px;
+  margin: 0 auto;
   box-sizing: border-box;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -151,11 +175,16 @@ export default {
 @media (max-width: 480px) {
   .admin-login-container {
     padding: 12px;
+    padding-top: 64px;
+    padding-left: 12px;
+  }
+
+  .header {
+    margin-bottom: 20px;
+    padding: 0 5px;
   }
 
   .back-btn {
-    top: 12px;
-    left: 12px;
     font-size: 20px;
     width: 36px;
     height: 36px;
@@ -187,11 +216,8 @@ export default {
 @media (min-width: 481px) and (max-width: 768px) {
   .admin-login-container {
     padding: 16px;
-  }
-
-  .back-btn {
-    top: 16px;
-    left: 16px;
+    padding-top: 72px;
+    padding-left: 16px;
   }
 
   .login-card {
@@ -208,13 +234,13 @@ export default {
 @media (min-width: 769px) {
   .admin-login-container {
     padding: 24px;
+    padding-left: 24px;
     max-width: 1200px;
     margin: 0 auto;
   }
 
-  .back-btn {
-    top: 24px;
-    left: 24px;
+  .header {
+    padding: 0;
   }
 
   .login-card {
