@@ -1,0 +1,38 @@
+/* 디자인 토큰: 흰 배경, 보라/라벤더 그라데이션, 연한 청록 악센트 */
+:root {
+  --bg-page: #f8fafc;
+  --bg-card: #ffffff;
+  --gradient-primary: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 45%, #a78bfa 100%);
+  --color-primary: #7c3aed;
+  --color-teal: #0d9488;
+  --color-teal-light: #14b8a6;
+  --color-error: #dc2626;
+  --text-primary: #1e293b;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --border-light: #e2e8f0;
+  --border-spot: #cbd5e1;
+  --radius-btn: 12px;
+  --radius-card: 16px;
+  --shadow-card: 0 2px 8px rgba(30, 41, 59, 0.08);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+  background: var(--bg-page);
+}
