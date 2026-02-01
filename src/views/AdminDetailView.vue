@@ -2,7 +2,20 @@
   <div class="admin-detail-container">
     <!-- 헤더 -->
     <div class="header">
-      <button @click="goBack" class="back-btn">←</button>
+      <button type="button" @click="goBack" class="back-btn">
+        <span class="back-btn-box">
+          <span class="back-btn-elem">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="back-btn-icon" aria-hidden="true">
+              <path d="m274-450 248 248-42 42-320-320 320-320 42 42-248 248h526v60H274Z" fill="currentColor" />
+            </svg>
+          </span>
+          <span class="back-btn-elem">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="back-btn-icon" aria-hidden="true">
+              <path d="m274-450 248 248-42 42-320-320 320-320 42 42-248 248h526v60H274Z" fill="currentColor" />
+            </svg>
+          </span>
+        </span>
+      </button>
       <button @click="goHome" class="close-btn">✕</button>
     </div>
 
@@ -125,7 +138,7 @@ export default {
   width: 100%;
   background: var(--bg-page);
   padding: 20px;
-  padding-top: 80px;
+  padding-top: 26px;
   padding-left: 70px;
   box-sizing: border-box;
   position: relative;
@@ -185,21 +198,92 @@ export default {
 }
 
 .back-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-primary);
-  font-size: 24px;
-  cursor: pointer;
+  display: block;
+  position: relative;
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
+  margin: 0;
+  overflow: hidden;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+  border: 0;
+  color: var(--color-primary);
+  font-size: 24px;
 }
 
-.back-btn:hover {
-  opacity: 0.7;
+.back-btn::before {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  inset: 4px;
+  border: 3px solid var(--border-spot);
+  transition:
+    opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.back-btn::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  inset: 4px;
+  border: 3px solid var(--color-primary);
+  transform: scale(1.3);
+  transition:
+    opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+}
+
+.back-btn:hover::before,
+.back-btn:focus::before {
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.back-btn:hover::after,
+.back-btn:focus::after {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.back-btn-box {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 100%;
+  align-items: center;
+  transition: transform 0.4s;
+  color: inherit;
+}
+
+.back-btn-elem {
+  display: flex;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn:hover .back-btn-box,
+.back-btn:focus .back-btn-box {
+  transform: translateX(-40px);
+}
+
+.back-btn-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .close-btn {
@@ -278,7 +362,7 @@ export default {
 @media (max-width: 480px) {
   .admin-detail-container {
     padding: 12px;
-    padding-top: 64px;
+    padding-top: 20px;
     padding-left: 12px;
   }
 
@@ -288,9 +372,13 @@ export default {
   }
 
   .back-btn {
-    font-size: 20px;
     width: 36px;
     height: 36px;
+  }
+
+  .back-btn-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .close-btn {
@@ -332,7 +420,7 @@ export default {
 @media (min-width: 481px) and (max-width: 768px) {
   .admin-detail-container {
     padding: 16px;
-    padding-top: 72px;
+    padding-top: 23px;
     padding-left: 16px;
   }
 
@@ -357,6 +445,7 @@ export default {
 @media (min-width: 769px) {
   .admin-detail-container {
     padding: 24px;
+    padding-top: 26px;
     padding-left: 24px;
     max-width: 1200px;
     margin: 0 auto;

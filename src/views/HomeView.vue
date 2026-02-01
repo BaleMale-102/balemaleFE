@@ -40,7 +40,11 @@
           <button @click="inputNumber('9')" class="keypad-btn">9</button>
         </div>
         <div class="keypad-row">
-          <button @click="deleteDigit" class="keypad-btn delete-btn">← X</button>
+          <button type="button" @click="deleteDigit" class="keypad-btn delete-btn" aria-label="삭제">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="delete-btn-icon" aria-hidden="true">
+              <path d="m448-326 112-112 112 112 43-43-113-111 111-111-43-43-110 112-112-112-43 43 113 111-113 111 43 43Zm-98 166q-14.25 0-27-6.38-12.75-6.37-21-17.62L80-480l221-296q8.25-11.25 21-17.63 12.75-6.37 27-6.37h472q24.75 0 42.38 17.62Q881-764.75 881-740v520q0 24.75-17.62 42.37Q845.75-160 821-160H350ZM155-480l195 260h471v-520H350L155-480Zm431 0Z" fill="currentColor" />
+            </svg>
+          </button>
           <button @click="inputNumber('0')" class="keypad-btn">0</button>
           <button @click="confirm" class="keypad-btn">확인</button>
         </div>
@@ -114,7 +118,7 @@ export default {
 
 .top-section {
   padding: 20px;
-  padding-top: 80px;
+  padding-top: 26px;
   padding-left: 70px;
   padding-bottom: 0;
   width: 100%;
@@ -231,26 +235,25 @@ export default {
 .keypad-btn:hover {
   border-color: var(--color-teal-light);
 }
-.keypad-btn:last-child {
-  background: var(--gradient-primary);
-  border: none;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
-}
-.keypad-btn:last-child:hover {
-  box-shadow: 0 6px 16px rgba(124, 58, 237, 0.45);
-}
 
 .keypad-btn.delete-btn {
   background: var(--bg-card);
-  color: var(--text-muted);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-btn-icon {
+  width: 36px;
+  height: 36px;
 }
 
 /* 모바일 (480px 이하) */
 @media (max-width: 480px) {
   .top-section {
     padding: 12px;
-    padding-top: 64px;
+    padding-top: 20px;
     padding-left: 12px;
     padding-bottom: 0;
   }
@@ -290,13 +293,18 @@ export default {
     height: 81px;
     font-size: 23px;
   }
+
+  .delete-btn-icon {
+    width: 31px;
+    height: 31px;
+  }
 }
 
 /* 태블릿 (481px ~ 768px) */
 @media (min-width: 481px) and (max-width: 768px) {
   .top-section {
     padding: 16px;
-    padding-top: 72px;
+    padding-top: 23px;
     padding-left: 16px;
     padding-bottom: 0;
   }
@@ -328,6 +336,11 @@ export default {
     height: 83px;
     font-size: 23px;
   }
+
+  .delete-btn-icon {
+    width: 34px;
+    height: 34px;
+  }
 }
 
 /* 데스크톱 (769px 이상) */
@@ -339,7 +352,7 @@ export default {
 
   .top-section {
     padding: 24px;
-    padding-top: 96px;
+    padding-top: 26px;
     padding-left: 24px;
     padding-bottom: 0;
   }
@@ -376,6 +389,11 @@ export default {
     width: 94px;
     height: 94px;
     font-size: 29px;
+  }
+
+  .delete-btn-icon {
+    width: 42px;
+    height: 42px;
   }
 }
 </style>

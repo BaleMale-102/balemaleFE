@@ -29,6 +29,15 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+### 환경 변수 (결제용)
+
+PortOne 결제용 값은 **Git에 올리지 않도록** 프로젝트 루트에 `.env.local` 파일을 만들고 아래 변수를 넣으세요.
+
+- `VITE_STORE_ID` – 포트원 가맹점 ID
+- `VITE_CHANNEL_KEY` – 포트원 채널 키
+
+`env.local.example`을 참고해 `.env.local`을 생성하면 됩니다.
+
 ### Compile and Hot-Reload for Development
 
 ```sh

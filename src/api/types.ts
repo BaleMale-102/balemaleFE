@@ -57,6 +57,12 @@ export interface AnomalyEventsPageResponse {
   totalPages: number
 }
 
+// 결제 준비 API 응답 (prepare)
+export interface PreparePaymentResponse {
+  paymentId: string
+  amount: number
+}
+
 // 주차장 맵 데이터 단건 (GET /parking/map)
 // slotId 기준 오름차순: 1-4 A1~A4(하단), 5-8 B1~B4(상단2행), 9-12 C1~C4(상단1행)
 export interface ParkingMapSlot {

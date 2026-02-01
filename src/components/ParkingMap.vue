@@ -255,7 +255,7 @@ export default {
 
 .parking-grid {
   display: grid;
-  grid-template-columns: repeat(4, 100px);
+  grid-template-columns: repeat(4, 85px);
   gap: 0;
   width: 100%;
   box-sizing: border-box;
@@ -263,17 +263,17 @@ export default {
 }
 
 .parking-grid.top-grid {
-  grid-template-rows: repeat(2, 135px);
+  grid-template-rows: repeat(2, 110px);
 }
 
 .parking-grid.bottom-grid {
-  grid-template-rows: 135px;
+  grid-template-rows: 110px;
 }
 
 .parking-spot-wrap {
   position: relative;
-  width: 100px;
-  height: 135px;
+  width: 85px;
+  height: 110px;
 }
 
 .zone {
@@ -283,10 +283,10 @@ export default {
   background: var(--bg-card);
 }
 
-/* 주차칸: 100 * 135, 점선 주차선, 모서리 직각 */
+/* 주차칸: 85 * 110, 점선 주차선, 모서리 직각 */
 .parking-spot {
-  width: 100px;
-  height: 135px;
+  width: 85px;
+  height: 110px;
   min-height: 0;
   border: 1px dashed var(--border-light);
   border-radius: 0;
@@ -317,8 +317,8 @@ export default {
   z-index: 0;
   top: 50%;
   left: 50%;
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background-color: #b085f5;
   opacity: 0.75;
@@ -501,6 +501,7 @@ export default {
   font-weight: 600;
   color: var(--text-muted);
   letter-spacing: 0.02em;
+  margin-top: 21px;
 }
 
 /* 장애인 아이콘: spot-center 우측 상단, slot-code와 동일 색상 */
@@ -532,6 +533,12 @@ export default {
   border: 1px solid var(--border-light);
   border-radius: 10px;
   box-sizing: border-box;
+}
+
+.info-text .label,
+.info-text .value,
+.info-text .divider {
+  font-size: 18px;
 }
 
 .label {
