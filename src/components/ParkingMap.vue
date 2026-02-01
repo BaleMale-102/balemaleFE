@@ -21,9 +21,14 @@
                   class="car-icon-img"
                   alt="주차된 차량"
                 />
-                <span v-else class="available-text">{{ isSlotHighlighted('top', idx) ? 'Selected' : '주차 가능' }}</span>
+                <span v-else class="available-text">{{
+                  isSlotHighlighted('top', idx) ? 'Selected' : '주차 가능'
+                }}</span>
               </div>
-              <span class="slot-code" :class="{ occupied: spot.occupied, selected: isSlotHighlighted('top', idx) }">
+              <span
+                class="slot-code"
+                :class="{ occupied: spot.occupied, selected: isSlotHighlighted('top', idx) }"
+              >
                 {{ TOP_SLOT_CODES[idx] }}
               </span>
             </div>
@@ -41,9 +46,17 @@
           >
             <div
               class="parking-spot"
-              :class="{ occupied: spot.occupied, selected: isSlotHighlighted('bottom', idx), disabled: spot.isDisabled }"
+              :class="{
+                occupied: spot.occupied,
+                selected: isSlotHighlighted('bottom', idx),
+                disabled: spot.isDisabled
+              }"
             >
-              <span v-if="isSlotHighlighted('bottom', idx)" class="selected-blob" aria-hidden="true" />
+              <span
+                v-if="isSlotHighlighted('bottom', idx)"
+                class="selected-blob"
+                aria-hidden="true"
+              />
               <div class="spot-center">
                 <svg
                   v-if="spot.isDisabled"
@@ -53,7 +66,10 @@
                   role="img"
                   aria-label="장애인"
                 >
-                  <path d="M480-720q-33 0-56.5-23.5T400-800q0-33 23.5-56.5T480-880q33 0 56.5 23.5T560-800q0 33-23.5 56.5T480-720ZM680-80v-200H480q-33 0-56.5-23.5T400-360v-240q0-33 23.5-56.5T480-680q24 0 41.5 10.5T559-636q55 66 99.5 90.5T760-520v80q-53 0-107-23t-93-55v138h120q33 0 56.5 23.5T760-300v220h-80Zm-280 0q-83 0-141.5-58.5T200-280q0-72 45.5-127T360-476v82q-35 14-57.5 44.5T280-280q0 50 35 85t85 35q39 0 69.5-22.5T514-240h82q-14 69-69 114.5T400-80Z" fill="currentColor"/>
+                  <path
+                    d="M480-720q-33 0-56.5-23.5T400-800q0-33 23.5-56.5T480-880q33 0 56.5 23.5T560-800q0 33-23.5 56.5T480-720ZM680-80v-200H480q-33 0-56.5-23.5T400-360v-240q0-33 23.5-56.5T480-680q24 0 41.5 10.5T559-636q55 66 99.5 90.5T760-520v80q-53 0-107-23t-93-55v138h120q33 0 56.5 23.5T760-300v220h-80Zm-280 0q-83 0-141.5-58.5T200-280q0-72 45.5-127T360-476v82q-35 14-57.5 44.5T280-280q0 50 35 85t85 35q39 0 69.5-22.5T514-240h82q-14 69-69 114.5T400-80Z"
+                    fill="currentColor"
+                  />
                 </svg>
                 <img
                   v-if="spot.occupied"
@@ -61,9 +77,18 @@
                   class="car-icon-img"
                   alt="주차된 차량"
                 />
-                <span v-else class="available-text">{{ isSlotHighlighted('bottom', idx) ? 'Selected' : '주차 가능' }}</span>
+                <span v-else class="available-text">{{
+                  isSlotHighlighted('bottom', idx) ? 'Selected' : '주차 가능'
+                }}</span>
               </div>
-              <span class="slot-code" :class="{ occupied: spot.occupied, selected: isSlotHighlighted('bottom', idx), disabled: spot.isDisabled }">
+              <span
+                class="slot-code"
+                :class="{
+                  occupied: spot.occupied,
+                  selected: isSlotHighlighted('bottom', idx),
+                  disabled: spot.isDisabled
+                }"
+              >
                 {{ BOTTOM_SLOT_CODES[idx] }}
               </span>
             </div>
@@ -89,8 +114,9 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { getAvailableParkingCount, getParkingMap } from '@/api/modules/public'
+import { parkingData } from '@/api/socket'
 import blackCar from '@/assets/icons/black-car.png'
 import blueCar from '@/assets/icons/blue-car.png'
 import orangeCar from '@/assets/icons/orange-car.png'
@@ -121,7 +147,10 @@ function toSpot(slot) {
 function applyMapList(list, topGridSpots, bottomGridSpots) {
   if (!Array.isArray(list) || list.length < 12) {
     topGridSpots.value = Array.from({ length: 8 }, () => ({ occupied: false, isDisabled: false }))
-    bottomGridSpots.value = Array.from({ length: 4 }, (_, i) => ({ occupied: false, isDisabled: i < 2 }))
+    bottomGridSpots.value = Array.from({ length: 4 }, (_, i) => ({
+      occupied: false,
+      isDisabled: i < 2
+    }))
     return
   }
   bottomGridSpots.value = list.slice(0, 4).map(toSpot)
@@ -167,6 +196,24 @@ export default {
       totalCount: 0
     })
 
+    watch(
+      parkingData,
+      (newData) => {
+        if (newData && Array.isArray(newData.parkingMap)) {
+          applyMapList(newData.parkingMap, topGridSpots, bottomGridSpots)
+        }
+        if (newData && typeof newData.availableCounts === 'object') {
+          parkingCount.value = {
+            normalCount: newData.availableCounts.normalCount ?? parkingCount.value.normalCount,
+            disabledCount:
+              newData.availableCounts.disabledCount ?? parkingCount.value.disabledCount,
+            totalCount: newData.availableCounts.totalCount ?? parkingCount.value.totalCount
+          }
+        }
+      },
+      { immediate: true }
+    )
+
     const fetchParkingMap = async () => {
       try {
         const res = await getParkingMap()
@@ -176,8 +223,14 @@ export default {
         if (import.meta.env.DEV) {
           console.warn('주차장 맵 조회 실패:', error?.message || error)
         }
-        topGridSpots.value = Array.from({ length: 8 }, () => ({ occupied: false, isDisabled: false }))
-        bottomGridSpots.value = Array.from({ length: 4 }, (_, idx) => ({ occupied: false, isDisabled: idx < 2 }))
+        topGridSpots.value = Array.from({ length: 8 }, () => ({
+          occupied: false,
+          isDisabled: false
+        }))
+        bottomGridSpots.value = Array.from({ length: 4 }, (_, idx) => ({
+          occupied: false,
+          isDisabled: idx < 2
+        }))
       }
     }
 

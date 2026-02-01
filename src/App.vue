@@ -1,6 +1,11 @@
 <script>
+import { connectSocket } from './api/socket'
+
 export default {
   name: 'App',
+  mounted() {
+    connectSocket()
+  },
   computed: {
     isAdminRoute() {
       return this.$route.path.startsWith('/admin')
