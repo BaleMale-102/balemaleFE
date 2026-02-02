@@ -13,29 +13,28 @@
       />
     </div>
 
-    <!-- 하단 섹션 -->
-    <div
-      class="bottom-section"
-      :class="{ 'bottom-section--waiting-moving': vehicleStatus === 'WAITING' || vehicleStatus === 'MOVING' }"
-    >
+    <!-- 하단 섹션: action-bar는 항상 하단 고정 (margin-top: auto) -->
+    <div class="bottom-section">
       <!-- WAITING / MOVING 일 때만 차량번호 카드 + 상태 문구 표시 (PARKING이면 정산표만) -->
       <template v-if="!loading && !loadError && parkedCar && (vehicleStatus === 'WAITING' || vehicleStatus === 'MOVING')">
-        <div class="vehicle-card">{{ parkedCar.plate }}</div>
-        <div class="status-message">
+        <div class="bottom-section__waiting-moving-content">
+          <div class="vehicle-card">{{ parkedCar.plate }}</div>
+          <div class="status-message">
           <template v-if="vehicleStatus === 'MOVING'">
-            {{ parkedCar.nodeCode }} 위치에 주차중 입니다
+            <span class="status-message__node">{{ parkedCar.nodeCode }}</span><span> 위치에 주차중 입니다</span>
           </template>
           <template v-else>
-            {{ parkedCar.nodeCode }} 위치에 주차 예정입니다
+            <span class="status-message__node">{{ parkedCar.nodeCode }}</span><span> 위치에 주차 예정입니다</span>
           </template>
+        </div>
         </div>
       </template>
 
       <!-- 차량 정보 표 (PARKING일 때만 표시) -->
-      <div v-if="vehicleStatus === 'PARKING'" class="info-panel">
-        <div v-if="loading" class="info-loading">조회 중...</div>
-        <div v-else-if="loadError" class="info-error">{{ loadError }}</div>
-        <template v-else>
+      <div v-if="vehicleStatus === 'PARKING'" class="bottom-section__parking-content">
+        <LoadingPanel v-if="loading" />
+        <div v-else-if="loadError" class="loading-panel loading-panel--error">{{ loadError }}</div>
+        <div v-else class="info-panel">
           <div class="info-row">
             <div class="info-label">차량번호</div>
             <div class="info-value">{{ parkedCar?.plate ?? '' }}</div>
@@ -56,7 +55,7 @@
             <div class="info-label">주차위치</div>
             <div class="info-value">{{ parkedCar?.nodeCode ?? '' }}</div>
           </div>
-        </template>
+        </div>
       </div>
 
       <div class="action-bar">
@@ -159,13 +158,15 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import ParkingMap from '@/components/ParkingMap.vue'
+import LoadingPanel from '@/components/LoadingPanel.vue'
 import { getRegisterCars, getParkedCars, getParkingMap } from '@/api/modules/public'
 import { preparePayment } from '@/api/modules/payment'
 
 export default {
   name: 'ExitPaymentView',
   components: {
-    ParkingMap
+    ParkingMap,
+    LoadingPanel
   },
   setup() {
     const router = useRouter()
@@ -186,18 +187,22 @@ export default {
     /** RegisterCar.status (PARKING | WAITING | MOVING) - 문구 표시 판단용 */
     const registerCarStatus = ref('')
 
-    onMounted(async () => {
-      // exit/payment 페이지 진입 후 20초 경과 시 홈으로 이동
-      pageIdleRedirectTimer = setTimeout(() => {
-        router.push('/')
-      }, 20000)
+    // exit/list에서 넘어올 때 첫 프레임부터 레이아웃 고정 (vehicle-card 영역 점프 방지)
+    const stateCar = history.state?.parkedCar
+    if (stateCar && stateCar.vehicleId != null) {
+      parkedCar.value = stateCar
+      registerCarStatus.value = history.state?.registerCarStatus ?? 'PARKING'
+      loading.value = false
+    }
 
-      // 1) 라우트 state로 전달된 ParkedCar가 있으면 사용 (직접 넘긴 경우)
-      const stateCar = history.state?.parkedCar
-      if (stateCar && stateCar.vehicleId != null) {
-        parkedCar.value = stateCar
-        registerCarStatus.value = history.state?.registerCarStatus ?? 'PARKING'
-        loading.value = false
+    onMounted(async () => {
+      // [테스트용 비활성화] exit/payment 페이지 진입 후 40초 경과 시 홈으로 이동
+      // pageIdleRedirectTimer = setTimeout(() => {
+      //   router.push('/')
+      // }, 40000)
+
+      // 1) 이미 setup에서 state 반영했으면 API 호출 생략
+      if (parkedCar.value != null) {
         return
       }
 
@@ -363,6 +368,9 @@ export default {
         const webhookUrl = import.meta.env.VITE_PAYMENT_WEBHOOK_URL
         const noticeUrls = webhookUrl ? [webhookUrl] : []
 
+        document.documentElement.classList.add('portone-payment-open')
+        document.body.classList.add('portone-payment-open')
+
         // 2) 결제창 호출
         const response = await window.PortOne.requestPayment({
           storeId,
@@ -403,6 +411,9 @@ export default {
       } catch (e) {
         if (import.meta.env.DEV) console.error('결제 오류:', e)
         showPaymentFailModal.value = true
+      } finally {
+        document.documentElement.classList.remove('portone-payment-open')
+        document.body.classList.remove('portone-payment-open')
       }
     }
 
@@ -504,11 +515,23 @@ export default {
   gap: 16px;
   min-height: 0;
   align-items: flex-start;
-  justify-content: space-between;
 }
 
-.bottom-section--waiting-moving {
-  padding-top: 125px;
+.bottom-section__waiting-moving-content {
+  margin-top: 125px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.bottom-section .action-bar {
+  margin-top: auto;
+}
+
+.bottom-section__parking-content {
+  width: 100%;
 }
 
 /* exit/list car-card와 동일한 디자인 */
@@ -535,10 +558,15 @@ export default {
   width: 100%;
   font-size: 30px;
   font-weight: 600;
-  color: var(--color-teal);
+  color: #000;
   text-align: center;
   letter-spacing: 0.18em;
   padding: 8px 0;
+}
+
+.status-message__node {
+  color: #0d9488;
+  font-weight: 700;
 }
 
 .info-panel {
@@ -550,19 +578,6 @@ export default {
   overflow: hidden;
   margin-top: 40px;
   background: var(--bg-card);
-}
-
-.info-loading,
-.info-error {
-  padding: 24px 16px;
-  text-align: center;
-  font-size: 21px;
-  background: var(--bg-page);
-  color: var(--text-primary);
-}
-
-.info-error {
-  color: var(--color-error);
 }
 
 .info-row {
@@ -660,11 +675,6 @@ export default {
   .bottom-section {
     padding: 12px;
     gap: 12px;
-    justify-content: space-between;
-  }
-
-  .bottom-section--waiting-moving {
-    padding-top: 125px;
   }
 
   .info-row {
@@ -707,11 +717,6 @@ export default {
   .bottom-section {
     padding: 16px;
     gap: 14px;
-    justify-content: space-between;
-  }
-
-  .bottom-section--waiting-moving {
-    padding-top: 125px;
   }
 
   .info-row {
@@ -760,11 +765,6 @@ export default {
   .bottom-section {
     padding: 24px;
     gap: 18px;
-    justify-content: space-between;
-  }
-
-  .bottom-section--waiting-moving {
-    padding-top: 125px;
   }
 
   .info-row {

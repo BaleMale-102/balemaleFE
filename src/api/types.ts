@@ -1,8 +1,11 @@
+// 차량 상태 (차량 상세 조회 등 status 필드용)
+export type VehicleStatus = 'WAITING' | 'MOVING' | 'PARKING' | 'EXITED'
+
 // 출차할(주차완료된) 차량 상세 조회 응답 구조
 export interface ParkedCar {
   vehicleId: number
   plate: string
-  status: string
+  status: VehicleStatus
   entryAt: string
   nodeCode: string
   totalMin: number
@@ -14,7 +17,7 @@ export interface ParkedCar {
 export interface RegisterCar {
   vehicleId: number
   plate: string
-  status: string
+  status: VehicleStatus
 }
 
 // 차량 가능 잔여수 조회 api 호출 응답 구조(장애인/일반/총 잔여수)
@@ -63,13 +66,18 @@ export interface PreparePaymentResponse {
   amount: number
 }
 
+// 맵 데이터 Enum 타입 (GET /parking/map)
+export type NodeStatus = 'NORMAL' | 'BLOCKED'
+export type SlotType = 'NORMAL' | 'DISABLED'
+export type SlotStatus = 'EMPTY' | 'OCCUPIED'
+
 // 주차장 맵 데이터 단건 (GET /parking/map)
 // slotId 기준 오름차순: 1-4 A1~A4(하단), 5-8 B1~B4(상단2행), 9-12 C1~C4(상단1행)
 export interface ParkingMapSlot {
   slotId: number
   nodeCode: string
-  nodeStatus: string // NORMAL | BLOCKED
-  slotType: string // NORMAL | DISABLED
-  slotStatus: string // EMPTY | OCCUPIED
+  nodeStatus: NodeStatus
+  slotType: SlotType
+  slotStatus: SlotStatus
 }
 

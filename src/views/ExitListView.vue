@@ -13,9 +13,7 @@
     <!-- 하단 섹션 (차량 카드 리스트) -->
     <div class="bottom-section">
       <div class="list-panel" :class="{ 'is-empty': loading || !!errorMessage || cars.length === 0 }">
-        <div v-if="loading" class="empty-panel">
-          <div class="empty-text">조회 중...</div>
-        </div>
+        <LoadingPanel v-if="loading" />
         <div v-else-if="errorMessage" class="empty-panel">
           <div class="empty-text error">{{ errorMessage }}</div>
         </div>
@@ -45,12 +43,14 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ParkingMap from '@/components/ParkingMap.vue'
+import LoadingPanel from '@/components/LoadingPanel.vue'
 import { getRegisterCars } from '@/api/modules/public'
 
 export default {
   name: 'ExitListView',
   components: {
-    ParkingMap
+    ParkingMap,
+    LoadingPanel
   },
   setup() {
     const route = useRoute()

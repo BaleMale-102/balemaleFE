@@ -6,20 +6,42 @@ export default {
       return this.$route.path.startsWith('/admin')
     }
   },
+  watch: {
+    $route: 'updateAppBackground'
+  },
+  mounted() {
+    this.updateAppBackground()
+  },
   methods: {
     goToAdmin() {
       this.$router.push('/admin/login')
+    },
+    updateAppBackground() {
+      const app = this.$el?.parentElement
+      if (!app) return
+      if (this.isAdminRoute) {
+        app.classList.remove('app-with-gradient')
+      } else {
+        app.classList.add('app-with-gradient')
+      }
     }
   }
 }
 </script>
 
 <template>
-  <button v-if="!isAdminRoute" @click="goToAdmin" class="admin-btn"></button>
-  <router-view />
+  <div class="app-wrap">
+    <button v-if="!isAdminRoute" @click="goToAdmin" class="admin-btn"></button>
+    <router-view />
+  </div>
 </template>
 
 <style scoped>
+.app-wrap {
+  position: relative;
+  min-height: 100vh;
+}
+
 /* 관리자 버튼 - top-padding 영역 안에 들어가도록 얇게 */
 .admin-btn {
   position: fixed;

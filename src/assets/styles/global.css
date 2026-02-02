@@ -1,3 +1,67 @@
+/* 한글 폰트: Suit (전역 사용) */
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Suit';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Heavy.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+
 /* 디자인 토큰: 흰 배경, 보라/라벤더 그라데이션, 연한 청록 악센트 */
 :root {
   --bg-page: #f8fafc;
@@ -15,13 +79,22 @@
   --radius-btn: 12px;
   --radius-card: 16px;
   --shadow-card: 0 2px 8px rgba(30, 41, 59, 0.08);
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Suit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html {
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
 body {
@@ -32,7 +105,66 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 결제창(포트원) 오픈 시: 스크롤 비활성화 + scale/zoom/transform 초기화
+   → 키오스크용 scale/zoom이 있으면 position:fixed 기반 결제 모달 좌표가 깨져 QR 영역 확대·스크롤 발생 */
+html.portone-payment-open,
+body.portone-payment-open {
+  overflow: hidden;
+  transform: none !important;
+  zoom: normal !important;
+}
+html.portone-payment-open #app,
+html.portone-payment-open .app-wrap {
+  transform: none !important;
+  zoom: normal !important;
+}
+
 #app {
   min-height: 100vh;
   background: var(--bg-page);
+}
+
+/* 관리자 외 페이지: 은은한 보라 계열 배경 (#app에 클래스 적용) */
+#app.app-with-gradient {
+  background: radial-gradient(
+    125% 125% at 50% 10%,
+    #f8fafc 35%,
+    rgba(167, 139, 250, 0.2) 70%,
+    rgba(139, 92, 246, 0.12) 100%
+  );
+}
+
+/* 위 배경이 보이도록 뷰 컨테이너 배경 투명 처리 */
+#app.app-with-gradient .home-container,
+#app.app-with-gradient .select-container,
+#app.app-with-gradient .entry-list-container,
+#app.app-with-gradient .entry-register-container,
+#app.app-with-gradient .entry-complete-container,
+#app.app-with-gradient .exit-list-container,
+#app.app-with-gradient .exit-payment-container,
+#app.app-with-gradient .exit-complete-container {
+  background: transparent;
+}
+
+/* 공통 조회 중 패널 (exit/payment 정산표와 동일한 크기감) */
+.loading-panel {
+  width: 100%;
+  min-height: 400px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 21px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.loading-panel--error {
+  color: var(--color-error);
 }

@@ -20,7 +20,7 @@
     </div>
 
     <!-- 로딩 -->
-    <div v-if="loading" class="loading">이상탐지 로그를 불러오는 중...</div>
+    <LoadingPanel v-if="loading" />
 
     <!-- 로그 카드 영역 (드롭다운 + 카드 리스트) -->
     <div v-else class="card-section">
@@ -57,6 +57,7 @@
 
 <script>
 import { getAnomalyEvents } from '@/api/modules/admin'
+import LoadingPanel from '@/components/LoadingPanel.vue'
 
 const TYPE_LABEL = {
   HUMAN: '사람',
@@ -65,6 +66,9 @@ const TYPE_LABEL = {
 
 export default {
   name: 'AdminDetailView',
+  components: {
+    LoadingPanel
+  },
   data() {
     return {
       filterOption: 'latest',
@@ -188,7 +192,6 @@ export default {
   font-size: 12px;
 }
 
-.loading,
 .empty {
   text-align: center;
   color: var(--text-muted);

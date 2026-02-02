@@ -75,13 +75,13 @@
     <div class="parking-info">
       <div class="info-text">
         <span class="label">일반 자리 :</span>
-        <span class="value" :class="{ full: parkingCount.normalCount === 0 }">
-          {{ parkingCount.normalCount === 0 ? '만차' : parkingCount.normalCount }}
+        <span class="value" :class="{ full: parkingCountLoaded && parkingCount.normalCount === 0 }">
+          {{ !parkingCountLoaded ? '—' : (parkingCount.normalCount === 0 ? '만차' : parkingCount.normalCount) }}
         </span>
         <span class="divider">/</span>
         <span class="label">장애인 자리 :</span>
-        <span class="value" :class="{ full: parkingCount.disabledCount === 0 }">
-          {{ parkingCount.disabledCount === 0 ? '만차' : parkingCount.disabledCount }}
+        <span class="value value--disabled" :class="{ full: parkingCountLoaded && parkingCount.disabledCount === 0 }">
+          {{ !parkingCountLoaded ? '—' : (parkingCount.disabledCount === 0 ? '만차' : parkingCount.disabledCount) }}
         </span>
       </div>
     </div>
@@ -166,6 +166,8 @@ export default {
       disabledCount: 0,
       totalCount: 0
     })
+    /** 잔여 수 API 조회 완료 여부 (로딩 중에는 만차로 보이지 않도록) */
+    const parkingCountLoaded = ref(false)
 
     const fetchParkingMap = async () => {
       try {
@@ -191,6 +193,8 @@ export default {
         if (import.meta.env.DEV) {
           console.warn('주차장 잔여수 조회 실패:', error?.message || error)
         }
+      } finally {
+        parkingCountLoaded.value = true
       }
     }
 
@@ -210,6 +214,7 @@ export default {
       topGridSpots,
       bottomGridSpots,
       parkingCount,
+      parkingCountLoaded,
       getCarIconSrc,
       isSlotHighlighted
     }
@@ -553,6 +558,10 @@ export default {
 .value {
   margin: 0 6px;
   color: var(--color-primary);
+}
+
+.value--disabled {
+  color: #16d2c1;
 }
 
 .value.full {

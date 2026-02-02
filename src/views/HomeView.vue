@@ -221,24 +221,30 @@ export default {
 .keypad-btn {
   width: clamp(81px, 23vw, 101px);
   height: clamp(81px, 23vw, 101px);
-  border: 2px solid var(--border-light);
-  background: var(--bg-card);
+  padding: 0;
+  border: 1px solid var(--border-light);
+  background: rgb(221 204 255 / 27%);
   font-size: clamp(23px, 6.5vw, 29px);
   font-weight: 600;
   cursor: pointer;
   box-sizing: border-box;
-  border-radius: var(--radius-btn);
+  border-radius: 0.5em;
   color: var(--text-primary);
-  box-shadow: var(--shadow-card);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+  transition: all 0.3s;
 }
+
 .keypad-btn:hover {
-  border-color: var(--color-teal-light);
+  border: 1.5px solid #fff;
+}
+
+.keypad-btn:active {
+  box-shadow: 4px 4px 12px #c5c5c5, -4px -4px 12px #ffffff;
 }
 
 .keypad-btn.delete-btn {
   background: var(--bg-card);
-  color: #000;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;

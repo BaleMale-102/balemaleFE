@@ -18,25 +18,37 @@
     </div>
     <div class="login-card">
       <h2>관리자 로그인</h2>
-      <div class="login-form">
-        <input 
-          v-model="id" 
-          type="text" 
-          inputmode="text" 
-          autocomplete="username"
-          placeholder="admin ID" 
-        />
-        <input 
-          v-model="password" 
-          type="password" 
-          inputmode="text" 
-          autocomplete="current-password"
-          placeholder="admin password" 
-        />
-        <button @click="login" class="login-btn" :disabled="loading">
-          {{ loading ? '로그인 중...' : 'Sign In' }}
+      <form class="login-form" @submit.prevent="login">
+        <div class="group">
+          <svg stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon" aria-hidden="true">
+            <path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" stroke-linejoin="round" stroke-linecap="round" />
+          </svg>
+          <input
+            v-model="id"
+            class="input"
+            type="text"
+            inputmode="text"
+            autocomplete="username"
+            placeholder="admin ID"
+          />
+        </div>
+        <div class="group">
+          <svg stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon" aria-hidden="true">
+            <path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" stroke-linejoin="round" stroke-linecap="round" />
+          </svg>
+          <input
+            v-model="password"
+            class="input"
+            type="password"
+            inputmode="text"
+            autocomplete="current-password"
+            placeholder="admin password"
+          />
+        </div>
+        <button type="submit" class="login-btn" :disabled="loading">
+          {{ loading ? '로그인 중...' : '로그인' }}
         </button>
-      </div>
+      </form>
     </div>
   </div>
 </template>
@@ -205,7 +217,7 @@ export default {
   text-align: center;
   margin-bottom: 30px;
   color: var(--color-teal);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .login-form {
@@ -214,24 +226,53 @@ export default {
   gap: 20px;
 }
 
-.login-form input {
-  padding: 15px;
-  border: 2px solid var(--border-light);
+.group {
+  display: flex;
+  line-height: 30px;
+  align-items: center;
+  position: relative;
+  max-width: 100%;
+}
+
+.input {
+  width: 100%;
+  height: 45px;
+  line-height: 30px;
+  padding: 0 5rem;
+  padding-left: 3rem;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  outline: none;
+  background-color: #f8fafc;
+  color: #0d0c22;
+  transition: 0.5s ease;
   font-size: 16px;
   box-sizing: border-box;
-  width: 100%;
   -webkit-appearance: none;
   appearance: none;
   touch-action: manipulation;
-  border-radius: var(--radius-btn);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  transition: border-color 0.2s;
 }
 
-.login-form input:focus {
+.input::placeholder {
+  color: #94a3b8;
+}
+
+.input:focus,
+.input:hover {
   outline: none;
-  border-color: var(--color-teal-light);
+  border-color: rgba(129, 140, 248);
+  background-color: #fff;
+  box-shadow: 0 0 0 5px rgb(129 140 248 / 30%);
+}
+
+.icon {
+  position: absolute;
+  left: 1rem;
+  fill: none;
+  width: 1rem;
+  height: 1rem;
+  color: #94a3b8;
+  pointer-events: none;
 }
 
 .login-btn {
@@ -294,8 +335,13 @@ export default {
     gap: 16px;
   }
 
-  .login-form input,
-  .login-btn {
+  .login-form .input {
+    height: 44px;
+    padding-left: 2.75rem;
+    font-size: 14px;
+  }
+
+  .login-form .login-btn {
     padding: 12px;
     font-size: 14px;
   }
@@ -347,8 +393,13 @@ export default {
     gap: 24px;
   }
 
-  .login-form input,
-  .login-btn {
+  .login-form .input {
+    height: 48px;
+    padding-left: 3rem;
+    font-size: 18px;
+  }
+
+  .login-form .login-btn {
     padding: 18px;
     font-size: 18px;
   }
