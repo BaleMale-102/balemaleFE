@@ -29,17 +29,18 @@
         <div class="vehicle-card">{{ parkedCar.plate }}</div>
         <div class="status-message">
           <template v-if="vehicleStatus === 'MOVING'">
-            {{ parkedCar.nodeCode }} 위치에 주차중 입니다
+            <span class="status-message__node">{{ parkedCar.nodeCode }}</span><span> 위치에 주차중 입니다</span>
           </template>
           <template v-else> {{ parkedCar.nodeCode }} 위치에 주차 예정입니다 </template>
+        </div>
         </div>
       </template>
 
       <!-- 차량 정보 표 (PARKING일 때만 표시) -->
-      <div v-if="vehicleStatus === 'PARKING'" class="info-panel">
-        <div v-if="loading" class="info-loading">조회 중...</div>
-        <div v-else-if="loadError" class="info-error">{{ loadError }}</div>
-        <template v-else>
+      <div v-if="vehicleStatus === 'PARKING'" class="bottom-section__parking-content">
+        <LoadingPanel v-if="loading" />
+        <div v-else-if="loadError" class="loading-panel loading-panel--error">{{ loadError }}</div>
+        <div v-else class="info-panel">
           <div class="info-row">
             <div class="info-label">차량번호</div>
             <div class="info-value">{{ parkedCar?.plate ?? '' }}</div>
@@ -60,7 +61,7 @@
             <div class="info-label">주차위치</div>
             <div class="info-value">{{ parkedCar?.nodeCode ?? '' }}</div>
           </div>
-        </template>
+        </div>
       </div>
 
       <div class="action-bar">
@@ -71,19 +72,95 @@
         <button v-else type="button" class="pay-btn" @click="goHome">처음으로</button>
       </div>
     </div>
+
+    <!-- 결제 실패 모달 -->
+    <Teleport to="body">
+      <div v-if="showPaymentFailModal" class="payment-fail-overlay" @click.self="closePaymentFailModal">
+        <div class="payment-fail-modal">
+          <div class="payment-fail-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 2L1 21h22L12 2z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M12 9v4M12 17h.01"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <h2 class="payment-fail-title">결제에 실패했습니다.</h2>
+          <p class="payment-fail-message">
+            일시적인 오류로 결제를 진행할 수 없습니다.<br>다시 시도해 주세요.
+          </p>
+          <button type="button" class="payment-fail-retry-btn" @click="closePaymentFailModal">
+            다시 시도
+          </button>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- 결제 완료 모달 -->
+    <Teleport to="body">
+      <div v-if="showPaymentSuccessModal" class="payment-success-overlay">
+        <div class="payment-success-modal">
+          <div class="payment-success-confetti" aria-hidden="true">
+            <span class="confetti confetti--1"></span>
+            <span class="confetti confetti--2"></span>
+            <span class="confetti confetti--3"></span>
+            <span class="confetti confetti--4"></span>
+            <span class="confetti confetti--5"></span>
+            <span class="confetti confetti--6"></span>
+            <span class="confetti confetti--7"></span>
+            <span class="confetti confetti--8"></span>
+          </div>
+          <div class="payment-success-icon" aria-hidden="true">
+            <span class="payment-success-icon-outer">
+              <span class="payment-success-icon-inner">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M5 13l4 4L19 7"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </span>
+          </div>
+          <h2 class="payment-success-title">결제가 완료되었습니다</h2>
+          <p class="payment-success-message">
+            출차 등록이 완료되었습니다.<br>
+            출차 구역에서 차량을 대기해주세요.<br>
+            이용해 주셔서 감사합니다.
+          </p>
+          <button type="button" class="payment-success-btn" @click="closePaymentSuccessModal">
+            확인
+          </button>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import ParkingMap from '@/components/ParkingMap.vue'
+import LoadingPanel from '@/components/LoadingPanel.vue'
 import { getRegisterCars, getParkedCars, getParkingMap } from '@/api/modules/public'
+import { preparePayment } from '@/api/modules/payment'
 
 export default {
   name: 'ExitPaymentView',
   components: {
-    ParkingMap
+    ParkingMap,
+    LoadingPanel
   },
   setup() {
     const router = useRouter()
@@ -91,16 +168,35 @@ export default {
     const parkedCar = ref(null)
     const loading = ref(true)
     const loadError = ref('')
+    /** 결제 실패 모달 표시 여부 */
+    const showPaymentFailModal = ref(false)
+    /** 결제 완료 모달 표시 여부 */
+    const showPaymentSuccessModal = ref(false)
+    /** 결제 성공 시 완료 페이지로 넘길 데이터 */
+    const paymentSuccessData = ref(null)
+    /** 결제 완료 모달 5초 자동 닫기 타이머 ID */
+    let successModalAutoCloseTimer = null
+    /** 페이지 20초 경과 시 홈으로 이동 타이머 ID */
+    let pageIdleRedirectTimer = null
     /** RegisterCar.status (PARKING | WAITING | MOVING) - 문구 표시 판단용 */
     const registerCarStatus = ref('')
 
+    // exit/list에서 넘어올 때 첫 프레임부터 레이아웃 고정 (vehicle-card 영역 점프 방지)
+    const stateCar = history.state?.parkedCar
+    if (stateCar && stateCar.vehicleId != null) {
+      parkedCar.value = stateCar
+      registerCarStatus.value = history.state?.registerCarStatus ?? 'PARKING'
+      loading.value = false
+    }
+
     onMounted(async () => {
-      // 1) 라우트 state로 전달된 ParkedCar가 있으면 사용 (직접 넘긴 경우)
-      const stateCar = history.state?.parkedCar
-      if (stateCar && stateCar.vehicleId != null) {
-        parkedCar.value = stateCar
-        registerCarStatus.value = history.state?.registerCarStatus ?? 'PARKING'
-        loading.value = false
+      // [테스트용 비활성화] exit/payment 페이지 진입 후 40초 경과 시 홈으로 이동
+      // pageIdleRedirectTimer = setTimeout(() => {
+      //   router.push('/')
+      // }, 40000)
+
+      // 1) 이미 setup에서 state 반영했으면 API 호출 생략
+      if (parkedCar.value != null) {
         return
       }
 
@@ -235,30 +331,127 @@ export default {
     }
 
     const pay = async () => {
-      let parkingMapData = null
-      try {
-        const res = await getParkingMap()
-        const list = res?.data?.data ?? res?.data ?? []
-        if (Array.isArray(list) && list.length >= 12) parkingMapData = list
-      } catch (e) {
-        if (import.meta.env.DEV) console.warn('맵 데이터 조회 실패:', e)
+      // PortOne SDK 로드 확인
+      if (!window.PortOne) {
+        alert('PortOne SDK가 로드되지 않았습니다. index.html에 스크립트 추가했는지 확인하세요.')
+        return
       }
-      router.push({
-        path: '/exit/complete',
-        state: parkingMapData ? { parkingMapData } : {}
-      })
+
+      if (!parkedCar.value?.vehicleId) {
+        alert('차량 정보를 확인할 수 없습니다.')
+        return
+      }
+
+      try {
+        // 1) 백엔드 결제 준비 API → paymentId, amount 획득
+        const prepareRes = await preparePayment({
+          vehicleId: parkedCar.value.vehicleId
+        })
+        const payload = prepareRes?.data?.data ?? prepareRes?.data
+        const paymentId = payload?.paymentId
+        const amount = payload?.amount
+
+        if (!paymentId || amount == null) {
+          alert('결제 준비에 실패했습니다. 다시 시도해주세요.')
+          return
+        }
+
+        const storeId = import.meta.env.VITE_STORE_ID
+        const channelKey = import.meta.env.VITE_CHANNEL_KEY
+        if (!storeId || !channelKey) {
+          alert('결제 설정이 올바르지 않습니다. (VITE_STORE_ID, VITE_CHANNEL_KEY)')
+          return
+        }
+
+        const webhookUrl = import.meta.env.VITE_PAYMENT_WEBHOOK_URL
+        const noticeUrls = webhookUrl ? [webhookUrl] : []
+
+        document.documentElement.classList.add('portone-payment-open')
+        document.body.classList.add('portone-payment-open')
+
+        // 2) 결제창 호출
+        const response = await window.PortOne.requestPayment({
+          storeId,
+          channelKey,
+          paymentId,
+          orderName: '주차 정산',
+          totalAmount: Number(amount),
+          currency: 'CURRENCY_KRW',
+          payMethod: 'EASY_PAY',
+          easyPay: { easyPayProvider: 'EASY_PAY_PROVIDER_KAKAOPAY' },
+          bypass: { kakaopay: { custom_message: '주차정산 결제' } },
+          noticeUrls
+        })
+
+        if (response?.code == null) {
+          // 결제 성공 → 완료 모달 표시 후 확인 시 완료 페이지로
+          let parkingMapData = null
+          try {
+            const mapRes = await getParkingMap()
+            const list = mapRes?.data?.data ?? mapRes?.data ?? []
+            if (Array.isArray(list) && list.length >= 12) parkingMapData = list
+          } catch (e) {
+            if (import.meta.env.DEV) console.warn('맵 데이터 조회 실패:', e)
+          }
+          paymentSuccessData.value = {
+            paymentResult: response,
+            parkingMapData: parkingMapData ?? undefined
+          }
+          showPaymentSuccessModal.value = true
+          successModalAutoCloseTimer = setTimeout(() => {
+            closePaymentSuccessModal()
+          }, 5000)
+        } else {
+          if (response?.code !== 'PAYMENT_CANCELED') {
+            showPaymentFailModal.value = true
+          }
+        }
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('결제 오류:', e)
+        showPaymentFailModal.value = true
+      } finally {
+        document.documentElement.classList.remove('portone-payment-open')
+        document.body.classList.remove('portone-payment-open')
+      }
     }
+
+    const closePaymentFailModal = () => {
+      showPaymentFailModal.value = false
+    }
+
+    const closePaymentSuccessModal = () => {
+      if (successModalAutoCloseTimer != null) {
+        clearTimeout(successModalAutoCloseTimer)
+        successModalAutoCloseTimer = null
+      }
+      showPaymentSuccessModal.value = false
+      paymentSuccessData.value = null
+      router.push('/')
+    }
+
+    onBeforeUnmount(() => {
+      if (successModalAutoCloseTimer != null) {
+        clearTimeout(successModalAutoCloseTimer)
+      }
+      if (pageIdleRedirectTimer != null) {
+        clearTimeout(pageIdleRedirectTimer)
+      }
+    })
 
     return {
       parkedCar,
       loading,
       loadError,
+      showPaymentFailModal,
+      showPaymentSuccessModal,
       formattedEntryAt,
       formattedAmount,
       vehicleStatus,
       goBack,
       goHome,
-      pay
+      pay,
+      closePaymentFailModal,
+      closePaymentSuccessModal
     }
   }
 }
@@ -277,7 +470,7 @@ export default {
 
 .top-section {
   padding: 20px;
-  padding-top: 80px;
+  padding-top: 26px;
   padding-left: 70px;
   padding-bottom: 0;
   width: 100%;
@@ -320,11 +513,23 @@ export default {
   gap: 16px;
   min-height: 0;
   align-items: flex-start;
-  justify-content: space-between;
 }
 
-.bottom-section--waiting-moving {
-  padding-top: 125px;
+.bottom-section__waiting-moving-content {
+  margin-top: 125px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.bottom-section .action-bar {
+  margin-top: auto;
+}
+
+.bottom-section__parking-content {
+  width: 100%;
 }
 
 /* exit/list car-card와 동일한 디자인 */
@@ -351,10 +556,15 @@ export default {
   width: 100%;
   font-size: 30px;
   font-weight: 600;
-  color: var(--color-teal);
+  color: #000;
   text-align: center;
   letter-spacing: 0.18em;
   padding: 8px 0;
+}
+
+.status-message__node {
+  color: #0d9488;
+  font-weight: 700;
 }
 
 .info-panel {
@@ -366,19 +576,6 @@ export default {
   overflow: hidden;
   margin-top: 40px;
   background: var(--bg-card);
-}
-
-.info-loading,
-.info-error {
-  padding: 24px 16px;
-  text-align: center;
-  font-size: 21px;
-  background: var(--bg-page);
-  color: var(--text-primary);
-}
-
-.info-error {
-  color: var(--color-error);
 }
 
 .info-row {
@@ -458,7 +655,7 @@ export default {
 @media (max-width: 480px) {
   .top-section {
     padding: 12px;
-    padding-top: 64px;
+    padding-top: 20px;
     padding-left: 12px;
     padding-bottom: 0;
   }
@@ -476,11 +673,6 @@ export default {
   .bottom-section {
     padding: 12px;
     gap: 12px;
-    justify-content: space-between;
-  }
-
-  .bottom-section--waiting-moving {
-    padding-top: 125px;
   }
 
   .info-row {
@@ -507,7 +699,7 @@ export default {
 @media (min-width: 481px) and (max-width: 768px) {
   .top-section {
     padding: 16px;
-    padding-top: 72px;
+    padding-top: 23px;
     padding-left: 16px;
     padding-bottom: 0;
   }
@@ -523,11 +715,6 @@ export default {
   .bottom-section {
     padding: 16px;
     gap: 14px;
-    justify-content: space-between;
-  }
-
-  .bottom-section--waiting-moving {
-    padding-top: 125px;
   }
 
   .info-row {
@@ -559,7 +746,7 @@ export default {
 
   .top-section {
     padding: 24px;
-    padding-top: 96px;
+    padding-top: 26px;
     padding-left: 24px;
     padding-bottom: 0;
   }
@@ -576,11 +763,6 @@ export default {
   .bottom-section {
     padding: 24px;
     gap: 18px;
-    justify-content: space-between;
-  }
-
-  .bottom-section--waiting-moving {
-    padding-top: 125px;
   }
 
   .info-row {
@@ -605,5 +787,194 @@ export default {
     padding: 14px 32px;
     font-size: 18px;
   }
+}
+
+/* 결제 실패 모달 (Teleport로 body에 렌더) */
+.payment-fail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.payment-fail-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 360px;
+  height: 400px;
+  padding: 40px 24px 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+}
+
+.payment-fail-icon {
+  width: 56px;
+  height: 56px;
+  color: #e53935;
+  margin-bottom: 20px;
+}
+
+.payment-fail-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.payment-fail-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.payment-fail-message {
+  margin: 0 0 40px;
+  font-size: 15px;
+  font-weight: 400;
+  color: #666;
+  line-height: 1.5;
+}
+
+.payment-fail-retry-btn {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: #0a6efd;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+.payment-fail-retry-btn:hover {
+  background: #095ad4;
+}
+
+/* 결제 완료 모달 (실패 모달과 동일 크기 360x400) */
+.payment-success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.payment-success-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 360px;
+  height: 400px;
+  padding: 40px 24px 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.payment-success-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+.confetti {
+  position: absolute;
+  width: 8px;
+  height: 10px;
+  border-radius: 1px;
+}
+
+.confetti--1 { top: 8%; left: 10%; background: #00897b; transform: rotate(-15deg); }
+.confetti--2 { top: 12%; right: 12%; background: #ffd54f; transform: rotate(20deg); }
+.confetti--3 { top: 18%; left: 6%; background: #e91e63; transform: rotate(10deg); }
+.confetti--4 { bottom: 20%; left: 8%; background: #212121; transform: rotate(-25deg); }
+.confetti--5 { bottom: 15%; right: 10%; background: #00897b; transform: rotate(15deg); }
+.confetti--6 { bottom: 25%; right: 6%; background: #ffd54f; transform: rotate(-10deg); }
+.confetti--7 { top: 45%; left: 4%; background: #e91e63; transform: rotate(5deg); }
+.confetti--8 { top: 50%; right: 5%; background: #212121; transform: rotate(-20deg); }
+
+.payment-success-icon {
+  margin-bottom: 20px;
+}
+
+.payment-success-icon-outer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: #e0f2f1;
+  border-radius: 50%;
+}
+
+.payment-success-icon-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: #00c853;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.payment-success-icon-inner svg {
+  width: 28px;
+  height: 28px;
+}
+
+.payment-success-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.payment-success-message {
+  margin: 0 0 40px;
+  font-size: 15px;
+  font-weight: 400;
+  color: #666;
+  line-height: 1.6;
+}
+
+.payment-success-btn {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: #0a6efd;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+.payment-success-btn:hover {
+  background: #095ad4;
 }
 </style>

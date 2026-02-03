@@ -1,0 +1,4 @@
+﻿// 파일 이름 .env.local 로 변경 후 노션에 있는 ID, KEY 값 입력
+VITE_STORE_ID=""
+VITE_CHANNEL_KEY=""
+

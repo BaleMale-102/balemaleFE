@@ -1,29 +1,54 @@
 <template>
   <div class="admin-login-container">
     <div class="header">
-      <button @click="goHome" class="back-btn">←</button>
+      <button type="button" @click="goHome" class="back-btn">
+        <span class="back-btn-box">
+          <span class="back-btn-elem">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="back-btn-icon" aria-hidden="true">
+              <path d="m274-450 248 248-42 42-320-320 320-320 42 42-248 248h526v60H274Z" fill="currentColor" />
+            </svg>
+          </span>
+          <span class="back-btn-elem">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="back-btn-icon" aria-hidden="true">
+              <path d="m274-450 248 248-42 42-320-320 320-320 42 42-248 248h526v60H274Z" fill="currentColor" />
+            </svg>
+          </span>
+        </span>
+      </button>
     </div>
     <div class="login-card">
       <h2>관리자 로그인</h2>
-      <div class="login-form">
-        <input 
-          v-model="id" 
-          type="text" 
-          inputmode="text" 
-          autocomplete="username"
-          placeholder="admin ID" 
-        />
-        <input 
-          v-model="password" 
-          type="password" 
-          inputmode="text" 
-          autocomplete="current-password"
-          placeholder="admin password" 
-        />
-        <button @click="login" class="login-btn" :disabled="loading">
-          {{ loading ? '로그인 중...' : 'Sign In' }}
+      <form class="login-form" @submit.prevent="login">
+        <div class="group">
+          <svg stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon" aria-hidden="true">
+            <path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" stroke-linejoin="round" stroke-linecap="round" />
+          </svg>
+          <input
+            v-model="id"
+            class="input"
+            type="text"
+            inputmode="text"
+            autocomplete="username"
+            placeholder="admin ID"
+          />
+        </div>
+        <div class="group">
+          <svg stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon" aria-hidden="true">
+            <path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" stroke-linejoin="round" stroke-linecap="round" />
+          </svg>
+          <input
+            v-model="password"
+            class="input"
+            type="password"
+            inputmode="text"
+            autocomplete="current-password"
+            placeholder="admin password"
+          />
+        </div>
+        <button type="submit" class="login-btn" :disabled="loading">
+          {{ loading ? '로그인 중...' : '로그인' }}
         </button>
-      </div>
+      </form>
     </div>
   </div>
 </template>
@@ -74,7 +99,7 @@ export default {
   width: 100%;
   background: var(--bg-page);
   padding: 20px;
-  padding-top: 80px;
+  padding-top: 26px;
   padding-left: 70px;
   box-sizing: border-box;
   position: relative;
@@ -88,21 +113,92 @@ export default {
 }
 
 .back-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-primary);
-  font-size: 24px;
-  cursor: pointer;
+  display: block;
+  position: relative;
   width: 40px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
+  margin: 0;
+  overflow: hidden;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+  border: 0;
+  color: var(--color-primary);
+  font-size: 24px;
 }
 
-.back-btn:hover {
-  opacity: 0.7;
+.back-btn::before {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  inset: 4px;
+  border: 3px solid var(--border-spot);
+  transition:
+    opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.back-btn::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  inset: 4px;
+  border: 3px solid var(--color-primary);
+  transform: scale(1.3);
+  transition:
+    opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+}
+
+.back-btn:hover::before,
+.back-btn:focus::before {
+  opacity: 0;
+  transform: scale(0.7);
+  transition:
+    opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
+    transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.back-btn:hover::after,
+.back-btn:focus::after {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1) 80ms,
+    transform 0.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) 80ms;
+}
+
+.back-btn-box {
+  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80px;
+  height: 100%;
+  align-items: center;
+  transition: transform 0.4s;
+  color: inherit;
+}
+
+.back-btn-elem {
+  display: flex;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn:hover .back-btn-box,
+.back-btn:focus .back-btn-box {
+  transform: translateX(-40px);
+}
+
+.back-btn-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .login-card {
@@ -121,7 +217,7 @@ export default {
   text-align: center;
   margin-bottom: 30px;
   color: var(--color-teal);
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .login-form {
@@ -130,24 +226,53 @@ export default {
   gap: 20px;
 }
 
-.login-form input {
-  padding: 15px;
-  border: 2px solid var(--border-light);
+.group {
+  display: flex;
+  line-height: 30px;
+  align-items: center;
+  position: relative;
+  max-width: 100%;
+}
+
+.input {
+  width: 100%;
+  height: 45px;
+  line-height: 30px;
+  padding: 0 5rem;
+  padding-left: 3rem;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  outline: none;
+  background-color: #f8fafc;
+  color: #0d0c22;
+  transition: 0.5s ease;
   font-size: 16px;
   box-sizing: border-box;
-  width: 100%;
   -webkit-appearance: none;
   appearance: none;
   touch-action: manipulation;
-  border-radius: var(--radius-btn);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  transition: border-color 0.2s;
 }
 
-.login-form input:focus {
+.input::placeholder {
+  color: #94a3b8;
+}
+
+.input:focus,
+.input:hover {
   outline: none;
-  border-color: var(--color-teal-light);
+  border-color: rgba(129, 140, 248);
+  background-color: #fff;
+  box-shadow: 0 0 0 5px rgb(129 140 248 / 30%);
+}
+
+.icon {
+  position: absolute;
+  left: 1rem;
+  fill: none;
+  width: 1rem;
+  height: 1rem;
+  color: #94a3b8;
+  pointer-events: none;
 }
 
 .login-btn {
@@ -176,7 +301,7 @@ export default {
 @media (max-width: 480px) {
   .admin-login-container {
     padding: 12px;
-    padding-top: 64px;
+    padding-top: 20px;
     padding-left: 12px;
   }
 
@@ -186,9 +311,13 @@ export default {
   }
 
   .back-btn {
-    font-size: 20px;
     width: 36px;
     height: 36px;
+  }
+
+  .back-btn-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .login-card {
@@ -206,8 +335,13 @@ export default {
     gap: 16px;
   }
 
-  .login-form input,
-  .login-btn {
+  .login-form .input {
+    height: 44px;
+    padding-left: 2.75rem;
+    font-size: 14px;
+  }
+
+  .login-form .login-btn {
     padding: 12px;
     font-size: 14px;
   }
@@ -217,7 +351,7 @@ export default {
 @media (min-width: 481px) and (max-width: 768px) {
   .admin-login-container {
     padding: 16px;
-    padding-top: 72px;
+    padding-top: 23px;
     padding-left: 16px;
   }
 
@@ -235,6 +369,7 @@ export default {
 @media (min-width: 769px) {
   .admin-login-container {
     padding: 24px;
+    padding-top: 26px;
     padding-left: 24px;
     max-width: 1200px;
     margin: 0 auto;
@@ -258,8 +393,13 @@ export default {
     gap: 24px;
   }
 
-  .login-form input,
-  .login-btn {
+  .login-form .input {
+    height: 48px;
+    padding-left: 3rem;
+    font-size: 18px;
+  }
+
+  .login-form .login-btn {
     padding: 18px;
     font-size: 18px;
   }

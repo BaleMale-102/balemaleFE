@@ -13,9 +13,7 @@
     <!-- 하단 섹션 (차량 카드 리스트) -->
     <div class="bottom-section">
       <div class="list-panel" :class="{ 'is-empty': loading || !!errorMessage || cars.length === 0 }">
-        <div v-if="loading" class="empty-panel">
-          <div class="empty-text">조회 중...</div>
-        </div>
+        <LoadingPanel v-if="loading" />
         <div v-else-if="errorMessage" class="empty-panel">
           <div class="empty-text error">{{ errorMessage }}</div>
         </div>
@@ -45,12 +43,14 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ParkingMap from '@/components/ParkingMap.vue'
+import LoadingPanel from '@/components/LoadingPanel.vue'
 import { getRegisterCars } from '@/api/modules/public'
 
 export default {
   name: 'ExitListView',
   components: {
-    ParkingMap
+    ParkingMap,
+    LoadingPanel
   },
   setup() {
     const route = useRoute()
@@ -129,7 +129,7 @@ export default {
 
 .top-section {
   padding: 20px;
-  padding-top: 80px;
+  padding-top: 26px;
   padding-left: 70px;
   padding-bottom: 0;
   width: 100%;
@@ -261,7 +261,7 @@ export default {
 @media (max-width: 480px) {
   .top-section {
     padding: 12px;
-    padding-top: 64px;
+    padding-top: 20px;
     padding-left: 12px;
     padding-bottom: 0;
   }
@@ -301,7 +301,7 @@ export default {
 @media (min-width: 481px) and (max-width: 768px) {
   .top-section {
     padding: 16px;
-    padding-top: 72px;
+    padding-top: 23px;
     padding-left: 16px;
     padding-bottom: 0;
   }
@@ -344,7 +344,7 @@ export default {
 
   .top-section {
     padding: 24px;
-    padding-top: 96px;
+    padding-top: 26px;
     padding-left: 24px;
     padding-bottom: 0;
   }

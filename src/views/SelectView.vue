@@ -83,7 +83,7 @@ export default {
 
 .top-section {
   padding: 20px;
-  padding-top: 80px;
+  padding-top: 26px;
   padding-left: 70px;
   padding-bottom: 0;
   width: 100%;
@@ -200,7 +200,7 @@ export default {
 @media (max-width: 480px) {
   .top-section {
     padding: 12px;
-    padding-top: 64px;
+    padding-top: 20px;
     padding-left: 12px;
     padding-bottom: 0;
   }
@@ -245,7 +245,7 @@ export default {
 @media (min-width: 481px) and (max-width: 768px) {
   .top-section {
     padding: 16px;
-    padding-top: 72px;
+    padding-top: 23px;
     padding-left: 16px;
     padding-bottom: 0;
   }
@@ -287,7 +287,7 @@ export default {
 
   .top-section {
     padding: 24px;
-    padding-top: 96px;
+    padding-top: 26px;
     padding-left: 24px;
     padding-bottom: 0;
   }

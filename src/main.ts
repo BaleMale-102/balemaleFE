@@ -1,3 +1,4 @@
+/// <reference path="../vue-shim.d.ts" />
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 

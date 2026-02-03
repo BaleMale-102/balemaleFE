@@ -100,13 +100,13 @@
     <div class="parking-info">
       <div class="info-text">
         <span class="label">일반 자리 :</span>
-        <span class="value" :class="{ full: parkingCount.normalCount === 0 }">
-          {{ parkingCount.normalCount === 0 ? '만차' : parkingCount.normalCount }}
+        <span class="value" :class="{ full: parkingCountLoaded && parkingCount.normalCount === 0 }">
+          {{ !parkingCountLoaded ? '—' : (parkingCount.normalCount === 0 ? '만차' : parkingCount.normalCount) }}
         </span>
         <span class="divider">/</span>
         <span class="label">장애인 자리 :</span>
-        <span class="value" :class="{ full: parkingCount.disabledCount === 0 }">
-          {{ parkingCount.disabledCount === 0 ? '만차' : parkingCount.disabledCount }}
+        <span class="value value--disabled" :class="{ full: parkingCountLoaded && parkingCount.disabledCount === 0 }">
+          {{ !parkingCountLoaded ? '—' : (parkingCount.disabledCount === 0 ? '만차' : parkingCount.disabledCount) }}
         </span>
       </div>
     </div>
@@ -198,6 +198,8 @@ export default defineComponent({
       disabledCount: 0,
       totalCount: 0
     })
+    /** 잔여 수 API 조회 완료 여부 (로딩 중에는 만차로 보이지 않도록) */
+    const parkingCountLoaded = ref(false)
 
     // 참고하고 나중에 삭제할 것
     watch(
@@ -244,6 +246,8 @@ export default defineComponent({
         if (import.meta.env.DEV) {
           console.warn('주차장 잔여수 조회 실패:', error?.message || error)
         }
+      } finally {
+        parkingCountLoaded.value = true
       }
     }
 
@@ -274,6 +278,7 @@ export default defineComponent({
       topGridSpots,
       bottomGridSpots,
       parkingCount,
+      parkingCountLoaded,
       getCarIconSrc,
       isSlotHighlighted,
       mapStore
@@ -320,7 +325,7 @@ export default defineComponent({
 
 .parking-grid {
   display: grid;
-  grid-template-columns: repeat(4, 100px);
+  grid-template-columns: repeat(4, 85px);
   gap: 0;
   width: 100%;
   box-sizing: border-box;
@@ -328,17 +333,17 @@ export default defineComponent({
 }
 
 .parking-grid.top-grid {
-  grid-template-rows: repeat(2, 135px);
+  grid-template-rows: repeat(2, 110px);
 }
 
 .parking-grid.bottom-grid {
-  grid-template-rows: 135px;
+  grid-template-rows: 110px;
 }
 
 .parking-spot-wrap {
   position: relative;
-  width: 100px;
-  height: 135px;
+  width: 85px;
+  height: 110px;
 }
 
 .zone {
@@ -348,10 +353,10 @@ export default defineComponent({
   background: var(--bg-card);
 }
 
-/* 주차칸: 100 * 135, 점선 주차선, 모서리 직각 */
+/* 주차칸: 85 * 110, 점선 주차선, 모서리 직각 */
 .parking-spot {
-  width: 100px;
-  height: 135px;
+  width: 85px;
+  height: 110px;
   min-height: 0;
   border: 1px dashed var(--border-light);
   border-radius: 0;
@@ -382,8 +387,8 @@ export default defineComponent({
   z-index: 0;
   top: 50%;
   left: 50%;
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background-color: #b085f5;
   opacity: 0.75;
@@ -566,6 +571,7 @@ export default defineComponent({
   font-weight: 600;
   color: var(--text-muted);
   letter-spacing: 0.02em;
+  margin-top: 21px;
 }
 
 /* 장애인 아이콘: spot-center 우측 상단, slot-code와 동일 색상 */
@@ -599,6 +605,12 @@ export default defineComponent({
   box-sizing: border-box;
 }
 
+.info-text .label,
+.info-text .value,
+.info-text .divider {
+  font-size: 18px;
+}
+
 .label {
   color: var(--text-muted);
 }
@@ -611,6 +623,10 @@ export default defineComponent({
 .value {
   margin: 0 6px;
   color: var(--color-primary);
+}
+
+.value--disabled {
+  color: #16d2c1;
 }
 
 .value.full {
