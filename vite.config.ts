@@ -23,7 +23,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://70.12.246.130:8080',
+        target: 'http://70.12.246.127:8080',
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on('proxyRes', (proxyRes) => {
@@ -38,7 +38,7 @@ export default defineConfig({
         }
       },
       '/images': {
-        target: 'http://192.168.0.19:8080',
+        target: 'http://70.12.246.127:8080',
         changeOrigin: true
       }
     }

@@ -1,10 +1,5 @@
 <template>
   <div class="home-container">
-    <!-- 주차로봇 상태 표시 -->
-    <div class="top-section">
-      <div class="robot-status">주차로봇 대기중</div>
-    </div>
-
     <!-- 주차장 맵 내 잔여 주차 수 표시 (일반/장애인/총 잔여수) -->
     <div class="middle-section">
       <ParkingMap />

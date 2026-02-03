@@ -33,7 +33,6 @@
           </template>
           <template v-else> {{ parkedCar.nodeCode }} 위치에 주차 예정입니다 </template>
         </div>
-        </div>
       </template>
 
       <!-- 차량 정보 표 (PARKING일 때만 표시) -->

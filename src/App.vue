@@ -1,9 +1,11 @@
 <script>
 import { defineComponent } from 'vue'
 import { connect, disconnect } from './api/websocket/stompClient'
+import RobotStatus from '@/components/RobotStatus.vue'
 
 export default defineComponent({
   name: 'App',
+  components: { RobotStatus },
   computed: {
     isAdminRoute() {
       return this.$route.path.startsWith('/admin')
@@ -47,7 +49,19 @@ export default defineComponent({
 <template>
   <div class="app-wrap">
     <button v-if="!isAdminRoute" @click="goToAdmin" class="admin-btn"></button>
-    <router-view />
+    <template v-if="isAdminRoute">
+      <router-view />
+    </template>
+    <template v-else>
+      <div class="app-layout">
+        <div class="top-section">
+          <RobotStatus />
+        </div>
+        <main class="app-main">
+          <router-view />
+        </main>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -55,6 +69,34 @@ export default defineComponent({
 .app-wrap {
   position: relative;
   min-height: 100vh;
+}
+
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.top-section {
+  padding: 20px;
+  padding-top: 26px;
+  padding-left: 70px;
+  padding-bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* 관리자 버튼 - top-padding 영역 안에 들어가도록 얇게 */

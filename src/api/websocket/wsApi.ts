@@ -10,13 +10,11 @@ export type PaymentData = {
 }
 
 export type RobotEventType =
-  | 'WAITING'
-  | 'LOADING'
-  | 'DRIVING_DESTINATION'
-  | 'DRIVING_HOME'
-  | 'ESTOP'
-  | 'PARKING'
-  | 'FAILED'
+  | 'ENTERING'   // 입차중
+  | 'EXITING'    // 출차중
+  | 'WAITING'    // 대기중
+  | 'ESTOP'      // 이상상태 감지 후 멈춤
+  | 'FAILED'     // 실패
 
 export type RobotEventData = {
   robotId: string
@@ -24,12 +22,14 @@ export type RobotEventData = {
   robotEventType: RobotEventType
 }
 
-export const subscribePaymentStatus = (handler: (e: PaymentData) => void) =>
-  subscribe('payment-status', '/topic/payment', handler)
+export const subscribePaymentStatus = (handler: (e: PaymentData) => void) => {
+  subscribe('payment-status', '/balemale/queue/kiosk/payment', handler)
+  console.log('subscribePaymentStatus')
+}
 
 export const unsubscribePaymentStatus = () => unsubscribe('payment-status')
 
 export const subscribeRobotEvent = (handler: (e: RobotEventData) => void) =>
-  subscribe('robot-event', '/topic/robot-events', handler) // 주소 확인 필요
+  subscribe('robot-event', '/balemale/queue/kiosk/robot', handler)
 
 export const unsubscribeRobotEvent = () => unsubscribe('robot-event')
