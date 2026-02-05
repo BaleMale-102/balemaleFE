@@ -42,7 +42,7 @@
             </svg>
           </button>
           <button @click="inputNumber('0')" class="keypad-btn">0</button>
-          <button @click="confirm" class="keypad-btn">확인</button>
+          <button @click="confirm" class="keypad-btn confirm-btn">확인</button>
         </div>
       </div>
       </div>
@@ -277,6 +277,10 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.keypad-btn.confirm-btn {
+  font-size: clamp(0.975rem, 2.7vw, 2.4rem);
 }
 
 .delete-btn-icon {
