@@ -16,6 +16,7 @@
           </span>
         </span>
       </button>
+      <h1 class="page-title">이상탐지 이력 조회</h1>
       <button @click="goHome" class="close-btn">✕</button>
     </div>
 
@@ -189,11 +190,30 @@ export default {
 
 .header {
   flex: 0 0 auto;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   margin-bottom: 20px;
   padding: 0 10px;
+  gap: 12px;
+}
+
+.header .back-btn {
+  justify-self: start;
+}
+
+.header .close-btn {
+  justify-self: end;
+}
+
+.page-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 800;
+  color: var(--color-teal);
+  text-align: center;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
 }
 
 .card-section {
@@ -216,9 +236,9 @@ export default {
 }
 
 .filter-select {
-  min-width: 100px;
-  padding: 8px 10px;
-  font-size: 12px;
+  min-width: 130px;
+  padding: 10px 10px;
+  font-size: 20px;
   border: 2px solid var(--border-light);
   border-radius: var(--radius-btn);
   background: var(--bg-card);
@@ -231,7 +251,7 @@ export default {
 }
 
 .filter-select option {
-  font-size: 12px;
+  font-size: 20px;
 }
 
 .empty {

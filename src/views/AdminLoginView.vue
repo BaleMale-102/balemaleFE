@@ -205,8 +205,9 @@ export default {
 }
 
 .login-card {
-  flex: 1 1 0;
-  min-height: 0;
+  flex: 0 0 auto;
+  height: 400px;
+  min-height: 400px;
   overflow-y: auto;
   background: var(--bg-card);
   border: 1px solid var(--border-light);
