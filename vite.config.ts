@@ -24,7 +24,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://43.202.0.116:80',
+        target: 'https://balemale.duckdns.org',
         changeOrigin: true,
         configure: (proxy) => {
           proxy.on('proxyRes', (proxyRes) => {
@@ -39,7 +39,7 @@ export default defineConfig({
         }
       },
       '/images': {
-        target: 'http://43.202.0.116:80',
+        target: 'https://balemale.duckdns.org',
         changeOrigin: true
       }
     }
