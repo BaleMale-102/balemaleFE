@@ -19,7 +19,7 @@ export type RobotEventType =
 export type RobotEventData = {
   robotId: string
   plate: string
-  robotEventType: RobotEventType
+  robotOperationStatus: RobotEventType
 }
 
 export const subscribePaymentStatus = (handler: (e: PaymentData) => void) => {

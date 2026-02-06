@@ -39,12 +39,12 @@ export default defineComponent({
     const { lastRobotEvent } = storeToRefs(wsStore)
 
     const statusLabel = computed(() => {
-      const type = lastRobotEvent.value?.robotEventType
+      const type = lastRobotEvent.value?.robotOperationStatus
       return type != null ? (ROBOT_EVENT_LABELS[type] ?? type) : '대기중'
     })
 
     const statusClass = computed(() => {
-      const type = lastRobotEvent.value?.robotEventType
+      const type = lastRobotEvent.value?.robotOperationStatus
       return type != null ? eventTypeClass(type) : 'badge--info'
     })
 

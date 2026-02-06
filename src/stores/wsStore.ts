@@ -19,7 +19,7 @@ export const useWsStore = defineStore('ws', () => {
 
   const setRobotEvent = (data: RobotEventData) => {
     lastRobotEvent.value = data
-    console.log('[WS Store] Robot Event:', data)
+    console.log('[WS Store] Robot Event:', lastRobotEvent.value)
   }
 
   return {
